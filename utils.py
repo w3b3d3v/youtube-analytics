@@ -11,7 +11,10 @@ def day_report_time(days_ago: int) -> Dict[str, str]:
 def month_report_time(months_ago: int) -> Dict[str, str]:
     today = date.today()
     old_date = today - timedelta(months_ago * 30)
-    return {"startDate": str(old_date), "endDate": str(today)}
+    correct_old_date = str(old_date)[:-3]
+    correct_today = str(today)[:-3]
+    print(correct_today)
+    return {"startDate": str(correct_old_date), "endDate": str(correct_today)}
 
 
 def year_report_time(years_ago: int) -> Dict[str, str]:
