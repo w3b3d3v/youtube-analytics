@@ -5,13 +5,13 @@ from typing import Dict
 def day_report_time(days_ago: int) -> Dict[str, str]:
     today = date.today()
     old_date = today - timedelta(days=days_ago)
-    return {"startDate": str(today), "endDate": str(old_date)}
+    return {"startDate": str(old_date), "endDate": str(today)}
 
 
 def month_report_time(months_ago: int) -> Dict[str, str]:
     today = date.today()
     old_date = today - timedelta(months_ago * 30)
-    return {"startDate": str(today), "endDate": str(old_date)}
+    return {"startDate": str(old_date), "endDate": str(today)}
 
 
 def year_report_time(years_ago: int) -> Dict[str, str]:
@@ -20,4 +20,4 @@ def year_report_time(years_ago: int) -> Dict[str, str]:
         return
     today = date.today()
     old_date = today - timedelta(days=years_ago * 365)
-    return {"startDate": str(today), "endDate": str(old_date)}
+    return {"startDate": str(old_date), "endDate": str(today)}

@@ -39,6 +39,10 @@ time = input(f'How many {options[choice][0]} do you want to retrieve?\n')
 
 youtubeAnalytics = get_service()
 dates = options[choice][1](int(time))
+time_dimension = options[choice][0][:-1]
+
+if time_dimension == 'year':
+  time_dimension = 'month'
 
 execute_api_request (
     youtubeAnalytics.reports().query,
@@ -46,6 +50,6 @@ execute_api_request (
     startDate=dates["startDate"],
     endDate=dates["endDate"],
     metrics='estimatedMinutesWatched,views,likes,subscribersGained,comments,averageViewDuration',
-    dimensions='month',
-    sort='month'
+    dimensions=time_dimension,
+    sort=time_dimension
 )
