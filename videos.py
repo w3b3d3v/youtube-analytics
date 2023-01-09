@@ -39,35 +39,78 @@ def store_response(row: List):
         return
     return db.insert_videos_data(conn=conn, data=tuple(row))
 
+def get_playlists(channel_id: str, max_results: int = 50):
+  youtube = get_service_api()
+  request = youtube.playlists().list(
+    part="snippet",
+    channelId=channel_id,
+    maxResults=max_results
+  )
+  response = request.execute()
+  return response["items"]
+
+def get_videos_by_playlist_id(playlist_id: str, youtube: object, max_results: int = 50):
+  request = youtube.playlistItems().list(
+    part="snippet",
+    playlistId=playlist_id,
+    maxResults=max_results
+  )
+  response = request.execute()
+  return response["items"]
+
+def store_playlist(row: List):
+  db = Database("analytics.sqlite")
+  conn = db.create_connection()
+  created = db.create_playlists_table(conn=conn)
+  if not created:
+      return
+  return db.insert_playlist(conn=conn, data=tuple(row))
+
+def process_playlists():
+  playlists = get_playlists(channel_id="UCP8Qy0VXJUzE8MCJdqARrtA")
+  for playlist in playlists:
+    to_insert = []
+    to_insert.append(playlist["id"])
+    to_insert.append(playlist["snippet"]["publishedAt"])
+    to_insert.append(playlist["snippet"]["title"])
+
+    store_playlist(row=to_insert)
+
+def process_videos():
+  db = Database("analytics.sqlite")
+  conn = db.create_connection()
+  playlists = db.get_inserted_playlists(conn)
+  videos = []
+  youtube = get_service_api()
+  for playlist in playlists:
+    videos_list = get_videos_by_playlist_id(playlist_id=playlist[1], youtube=youtube)
+    for video in videos_list:
+      videos.append((video["id"], video["snippet"]["title"], video["snippet"]["publishedAt"], video["snippet"]["playlistId"]))
+
+  created_v = db.create_videos_table(conn)
+  for video in videos:
+    if not created_v:
+      return
+    video_id = db.insert_videos_data(conn, video)
 
 # Disable OAuthlib's HTTPs verification when running locally.
 # *DO NOT* leave this option enabled when running in production.
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-youtubeAnalytics = get_service_analytics()
 
-request = youtubeAnalytics.reports().query(
-        dimensions="video",
-        endDate="2023-01-06",
-        ids="channel==MINE",
-        maxResults=10,
-        metrics="views,likes,comments,averageViewDuration,estimatedMinutesWatched",
-        sort="-views",
-        startDate="2022-01-01"
-    )
+# process_playlists()
+# process_videos()
 
-response = request.execute()
-rows = response["rows"]
+db = Database("analytics.sqlite")
+conn = db.create_connection()
+print(db.join_query(conn))
 
-for row in rows:
-    video_id = row[0]
-    youtube = get_service_api()
-    request = youtube.videos().list(
-            part="snippet",
-            id=video_id
-        )
-    response = request.execute()
-    row.append(response["items"][0]["snippet"]["title"])
-    row.append(response["items"][0]["snippet"]["description"])
-    store_response(row)
+  
+# get list of playlists by youtube.playlists.list() and store it in a playlists database
 
+# then get playlistItems by playlist and store them
+
+# many to many relationship ->
+# video: PK video id, other video fields
+# playlist: PK playlist id, other fields
+# video_playlist: PF video id, PF playlist id
