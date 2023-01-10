@@ -6,10 +6,32 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from database import Database
 from typing import List
-from datetime import datetime
 import pickle
+import json
 
 SCOPES = ['https://www.googleapis.com/auth/youtube']
+
+def format_env_to_secrets():
+  client_id = os.getenv("CLIENT_ID")
+  project_id = os.getenv("PROJECT_ID")
+  auth_uri = os.getenv("AUTH_URI")
+  token_uri = os.getenv("TOKEN_URI")
+  auth_provider_url = os.getenv("AUTH_PROVIDER_URL")
+  client_secret = os.getenv("CLIENT_SECRET")
+  redirect_uris = [os.getenv("REDIRECT_URIS")]
+
+  json_formatted = {
+    "installed": {
+      "client_id": client_id,
+      "project_id": project_id,
+      "auth_uri": auth_uri,
+      "token_uri": token_uri,
+      "auth_provider_x509_cert_url": auth_provider_url,
+      "client_secret": client_secret,
+      "redirect_uris": redirect_uris
+    }
+  }
+  return json.dumps(json_formatted)
 
 def youtube_authenticate():
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
