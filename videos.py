@@ -20,7 +20,7 @@ def format_env_to_secrets():
   client_secret = os.getenv("CLIENT_SECRET")
   redirect_uris = [os.getenv("REDIRECT_URIS")]
 
-  json_formatted = {
+  formatted_obj = {
     "installed": {
       "client_id": client_id,
       "project_id": project_id,
@@ -31,7 +31,10 @@ def format_env_to_secrets():
       "redirect_uris": redirect_uris
     }
   }
-  return json.dumps(json_formatted)
+
+  formatted_json = json.dumps(formatted_obj)
+  with open("secrets.json", "w") as f:
+    f.write(formatted_json)
 
 def youtube_authenticate():
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
