@@ -18,8 +18,7 @@ def get_service_api():
   credentials = flow.run_console()
   return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
 
-def get_playlists(channel_id: str, max_results: int = 50):
-  youtube = get_service_api()
+def get_playlists(youtube, channel_id: str, max_results: int = 50):
   request = youtube.playlists().list(
     part="snippet",
     channelId=channel_id,
@@ -45,8 +44,8 @@ def store_playlist(row: List):
       return
   return db.insert_playlist(cursor=cursor, data=tuple(row))
 
-def process_playlists():
-  playlists = get_playlists(channel_id="UCP8Qy0VXJUzE8MCJdqARrtA")
+def process_playlists(youtube):
+  playlists = get_playlists(youtube=youtube, channel_id="UCP8Qy0VXJUzE8MCJdqARrtA")
   for playlist in playlists:
     to_insert = []
     to_insert.append(playlist["id"])
@@ -55,12 +54,11 @@ def process_playlists():
 
     store_playlist(row=to_insert)
 
-def process_videos():
+def process_videos(youtube):
   db = Database()
   cursor = db.create_cursor()
   playlists = db.get_inserted_playlists(cursor=cursor)
   videos = []
-  youtube = get_service_api()
   for playlist in playlists:
     videos_list = get_videos_by_playlist_id(playlist_id=playlist[1], youtube=youtube)
     for video in videos_list:
@@ -76,6 +74,6 @@ def process_videos():
 # *DO NOT* leave this option enabled when running in production.
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-
-process_playlists()
-process_videos()
+youtube = get_service_api()
+process_playlists(youtube=youtube)
+process_videos(youtube=youtube)
