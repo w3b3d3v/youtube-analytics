@@ -15,7 +15,7 @@ Before running it locally, we have to set up authorization credentials for the p
 
 4. On the [Credentials](https://console.developers.google.com/apis/credentials) page, click the Create credentials button and select Oatuh client ID.
 
-5. Select the application type Other, enter the name, and click the Create button.
+5. Select the application type Desktop, enter the name, and click the Create button.
 
 6. Download the JSON (button right of the client ID)
 
@@ -33,6 +33,8 @@ to install dependencies.
 
 Simply run 
 
-`python3 analytics.py`
+`python3 videos.py`
 
 And answer the prompts! Authenticate your account on google and you are good to go.
+
+After authenticating the first time, the script will automatically refresh the token when it expires.
