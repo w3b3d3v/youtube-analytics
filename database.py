@@ -18,7 +18,7 @@ class Database:
        return self.db.cursor()
         
     def create_playlists_table(self, cursor):
-        table_sql = """CREATE TABLE IF NOT EXISTS playlists (id INT AUTO_INCREMENT PRIMARY KEY, playlist_id TEXT UNIQUE, publishedAt DATE, title TEXT);"""
+        table_sql = """CREATE TABLE IF NOT EXISTS playlists (id INT AUTO_INCREMENT PRIMARY KEY, playlist_id VARCHAR(255) UNIQUE, publishedAt DATE, playlist_name VARCHAR(255));"""
         if not cursor:
             return False
         try:
@@ -29,10 +29,10 @@ class Database:
             return False
     
     def insert_playlist(self, cursor, data):
-        insert_sql = """INSERT INTO playlists (playlist_id, publishedAt, playlist_name) VALUES (?, ?, ?);"""
+        insert_sql = """INSERT INTO playlists (playlist_id, publishedAt, playlist_name) VALUES (%s, %s, %s);"""
         try:
             cursor.execute(insert_sql, data)
-            cursor.commit()
+            self.db.commit()
             return True
 
         except Error as e:
@@ -41,17 +41,18 @@ class Database:
 
     def get_inserted_playlists(self, cursor):
         try:
-            response = cursor.execute("""SELECT * FROM playlists;""").fetchall()
+            cursor.execute("""SELECT * FROM playlists;""")
+            response = cursor.fetchall()
             return response
 
         except Error as e:
             print(e)
             return False
     
-    def get_playlist_id_by_id(self, conn, playlist_id):
+    def get_playlist_id_by_id(self, cursor, playlist_id):
         try:
-            c = conn.cursor()
-            response = c.execute(f"""SELECT id FROM playlists WHERE playlist_id = '{playlist_id}';""").fetchall()
+            cursor.execute(f"""SELECT id FROM playlists WHERE playlist_id = '{playlist_id}';""")
+            response =  cursor.fetchall()
             return response
 
         except Error as e:
@@ -59,7 +60,7 @@ class Database:
             return False
 
     def create_videos_table(self, cursor):
-        table_sql = """CREATE TABLE IF NOT EXISTS videos (id INT PRIMARY KEY, video_id TEXT UNIQUE, title TEXT, publishedAt DATE, playlist_id TEXT NOT NULL, FOREIGN KEY(playlist_id) REFERENCES playlists(playlist_id));"""
+        table_sql = """CREATE TABLE IF NOT EXISTS videos (id INT AUTO_INCREMENT PRIMARY KEY, video_id VARCHAR(255) UNIQUE, title VARCHAR(255), publishedAt DATE, playlist_id VARCHAR(255) NOT NULL, FOREIGN KEY(playlist_id) REFERENCES playlists(playlist_id));"""
         if not cursor:
             return False
         try:
@@ -70,11 +71,11 @@ class Database:
             return False
     
     def insert_videos_data(self, cursor, data):
-        insert_sql = """INSERT INTO videos (video_id, title, publishedAt, playlist_id) VALUES (?, ?, ?, ?);"""
+        insert_sql = """INSERT INTO videos (video_id, title, publishedAt, playlist_id) VALUES (%s, %s, %s, %s);"""
         
         try:
             cursor.execute(insert_sql, data)
-            cursor.commit()
+            self.db.commit()
             return cursor.lastrowid
 
         except Error as e:
@@ -83,7 +84,7 @@ class Database:
 
     def create_video_playlists_table(self, cursor):
         table_sql = """CREATE TABLE IF NOT EXISTS videosandplaylist (
-            id INT PRIMARY KEY, 
+            id INT AUTO_INCREMENT PRIMARY KEY, 
             video_db_id INTEGER NOT NULL, 
             playlist_db_id  INTEGER NOT NULL,
             FOREIGN KEY(video_db_id) REFERENCES videos (id), 
@@ -99,10 +100,10 @@ class Database:
             return False
 
     def insert_videos_playlists(self, cursor, data):
-        insert_sql = """INSERT INTO videosandplaylist (video_db_id, playlist_db_id) VALUES (?, ?);"""
+        insert_sql = """INSERT INTO videosandplaylist (video_db_id, playlist_db_id) VALUES (%s, %s);"""
         try:
             cursor.execute(insert_sql, data)
-            cursor.commit()
+            self.db.commit()
             return cursor.lastrowid
 
         except Error as e:
@@ -110,22 +111,23 @@ class Database:
             return False
 
     def create_analytics_table(self, cursor):
-        table_sql = """CREATE TABLE IF NOT EXISTS analytics (id integer PRIMARY KEY, date TEXT, estimatedMinutesWatched INTEGER, views INTEGER, likes INTEGER, subscribersGained INTEGER, comments INTEGER, averageViewDuration INTEGER);"""
+        table_sql = """CREATE TABLE IF NOT EXISTS analytics (id integer PRIMARY KEY, date VARCHAR(255), estimatedMinutesWatched INTEGER, views INTEGER, likes INTEGER, subscribersGained INTEGER, comments INTEGER, averageViewDuration INTEGER);"""
         if not cursor:
             return False
         try:
             cursor.execute(table_sql)
+            self.db.commit()
             return True
         except Error as e:
             print(e)
             return False
 
     def insert_analytics_data(self, cursor, data):
-        insert_sql = """INSERT INTO analytics (date, estimatedMinutesWatched, views, likes, subscribersGained, comments, averageViewDuration) VALUES (?, ?, ?, ?, ?, ?, ?);"""
+        insert_sql = """INSERT INTO analytics (date, estimatedMinutesWatched, views, likes, subscribersGained, comments, averageViewDuration) VALUES (%s, %s, %s, %s, %s, %s, %s);"""
         
         try:
             cursor.execute(insert_sql, data)
-            cursor.commit()
+            self.db.commit()
             return cursor.lastrowid
 
         except Error as e:

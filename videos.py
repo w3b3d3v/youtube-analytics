@@ -6,6 +6,7 @@ from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from database import Database
 from typing import List
+from datetime import datetime
 
 SCOPES = ['https://www.googleapis.com/auth/youtube']
 API_SERVICE_NAME = 'youtube'
@@ -49,7 +50,7 @@ def process_playlists():
   for playlist in playlists:
     to_insert = []
     to_insert.append(playlist["id"])
-    to_insert.append(playlist["snippet"]["publishedAt"])
+    to_insert.append(datetime.fromisoformat(playlist["snippet"]["publishedAt"].split("T")[0]))
     to_insert.append(playlist["snippet"]["title"])
 
     store_playlist(row=to_insert)
@@ -63,7 +64,7 @@ def process_videos():
   for playlist in playlists:
     videos_list = get_videos_by_playlist_id(playlist_id=playlist[1], youtube=youtube)
     for video in videos_list:
-      videos.append((video["id"], video["snippet"]["title"], video["snippet"]["publishedAt"], video["snippet"]["playlistId"]))
+      videos.append((video["id"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["playlistId"]))
 
   created_v = db.create_videos_table(cursor=cursor)
   for video in videos:
@@ -76,5 +77,5 @@ def process_videos():
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
-# process_playlists()
-# process_videos()
+process_playlists()
+process_videos()
