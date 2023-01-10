@@ -30,7 +30,7 @@ class Database:
             return False
     
     def insert_playlist(self, cursor, data):
-        insert_sql = """INSERT INTO playlists (playlist_id, publishedAt, playlist_name) VALUES (%s, %s, %s);"""
+        insert_sql = """REPLACE INTO playlists (playlist_id, publishedAt, playlist_name) VALUES (%s, %s, %s);"""
         try:
             cursor.execute(insert_sql, data)
             self.db.commit()
@@ -72,7 +72,7 @@ class Database:
             return False
     
     def insert_videos_data(self, cursor, data):
-        insert_sql = """INSERT INTO videos (video_id, title, publishedAt, playlist_id, position) VALUES (%s, %s, %s, %s, %s);"""
+        insert_sql = """REPLACE INTO videos (video_id, title, publishedAt, playlist_id, position) VALUES (%s, %s, %s, %s, %s);"""
         
         try:
             cursor.execute(insert_sql, data)

@@ -84,9 +84,10 @@ def process_videos(youtube):
 
 # Disable OAuthlib's HTTPs verification when running locally.
 # *DO NOT* leave this option enabled when running in production.
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-youtube = youtube_authenticate()
-process_playlists(youtube=youtube)
-process_videos(youtube=youtube)
-print('Done processing videos and playlists.')
+def run():
+  os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+  youtube = youtube_authenticate()
+  process_playlists(youtube=youtube)
+  process_videos(youtube=youtube)
+  print('Done processing videos and playlists.')
