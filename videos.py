@@ -99,20 +99,30 @@ def process_videos(youtube):
   for playlist in playlists:
     videos_list = get_videos_by_playlist_id(playlist_id=playlist[1], youtube=youtube)
     for video in videos_list:
-      videos.append((video["snippet"]["resourceId"]["videoId"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["playlistId"], video["snippet"]["position"]))
+      videos.append((video["snippet"]["resourceId"]["videoId"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["position"], playlist[0]))
 
   created_v = db.create_videos_table(cursor=cursor)
+  created_vp = db.create_video_playlists_table(cursor=cursor)
   for video in videos:
-    if not created_v:
+    if not created_v or not created_vp:
       return
-    db.insert_videos_data(cursor=cursor, data=video)
+    video_db_id = db.insert_videos_data(cursor=cursor, data=video[:-1])
+    db.insert_videos_playlists(cursor=cursor, data=tuple([video_db_id, video[-1]]))
 
 # Disable OAuthlib's HTTPs verification when running locally.
 # *DO NOT* leave this option enabled when running in production.
 
 def run():
   os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+  format_env_to_secrets()
   youtube = youtube_authenticate()
   process_playlists(youtube=youtube)
   process_videos(youtube=youtube)
   print('Done processing videos and playlists.')
+
+run()
+
+
+# select query to query video title and playlist title on which the video is 
+
+# SELECT videos.title, playlists.playlist_name FROM videos LEFT OUTER JOIN videos_playlists ON videos.id = videos_playlists.video_id LEFT OUTER JOIN playlists ON videos_playlists.playlist_id = playlists.id;
