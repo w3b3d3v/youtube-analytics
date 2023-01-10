@@ -60,7 +60,7 @@ class Database:
             return False
 
     def create_videos_table(self, cursor):
-        table_sql = """CREATE TABLE IF NOT EXISTS videos (id INT AUTO_INCREMENT PRIMARY KEY, video_id VARCHAR(255) UNIQUE, title VARCHAR(255), publishedAt DATE, playlist_id VARCHAR(255) NOT NULL, FOREIGN KEY(playlist_id) REFERENCES playlists(playlist_id));"""
+        table_sql = """CREATE TABLE IF NOT EXISTS videos (id INT AUTO_INCREMENT PRIMARY KEY, video_id VARCHAR(255) UNIQUE, title VARCHAR(255), publishedAt DATE, playlist_id VARCHAR(255) NOT NULL, position INT, FOREIGN KEY(playlist_id) REFERENCES playlists(playlist_id));"""
         if not cursor:
             return False
         try:
@@ -71,7 +71,7 @@ class Database:
             return False
     
     def insert_videos_data(self, cursor, data):
-        insert_sql = """INSERT INTO videos (video_id, title, publishedAt, playlist_id) VALUES (%s, %s, %s, %s);"""
+        insert_sql = """INSERT INTO videos (video_id, title, publishedAt, playlist_id, position) VALUES (%s, %s, %s, %s, %s);"""
         
         try:
             cursor.execute(insert_sql, data)
