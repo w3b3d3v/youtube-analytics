@@ -63,11 +63,7 @@ def store_playlist(row: List):
 def process_playlists(youtube):
   playlists = get_playlists(youtube=youtube, channel_id="UCP8Qy0VXJUzE8MCJdqARrtA")
   for playlist in playlists:
-    to_insert = []
-    to_insert.append(playlist["id"])
-    to_insert.append(datetime.fromisoformat(playlist["snippet"]["publishedAt"].split("T")[0]))
-    to_insert.append(playlist["snippet"]["title"])
-
+    to_insert = [playlist["id"], playlist["snippet"]["publishedAt"].split("T")[0], playlist["snippet"]["title"]]
     store_playlist(row=to_insert)
 
 def process_videos(youtube):
