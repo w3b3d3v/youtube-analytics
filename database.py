@@ -8,10 +8,11 @@ load_dotenv()
 class Database:
     def __init__(self) -> None:
         self.db = mysql.connector.connect(
-            host=os.getenv("HOST"),
-            user=os.getenv("USER"),
-            password=os.getenv("PASSWORD"),
-            database=os.getenv("DATABASE")
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_DATABASE"),
+            port=(os.getenv("DB_PORT") or 3306)
         )
 
     def create_cursor(self):
@@ -83,12 +84,12 @@ class Database:
             return False
 
     def create_video_playlists_table(self, cursor):
-        table_sql = """CREATE TABLE IF NOT EXISTS videosandplaylist (
+        table_sql = """CREATE TABLE IF NOT EXISTS videos_playlists (
             id INT AUTO_INCREMENT PRIMARY KEY, 
-            video_db_id INTEGER NOT NULL, 
-            playlist_db_id  INTEGER NOT NULL,
-            FOREIGN KEY(video_db_id) REFERENCES videos (id), 
-            FOREIGN KEY(playlist_db_id) REFERENCES playlists(id)
+            video_id INTEGER NOT NULL, 
+            playlist_id  INTEGER NOT NULL,
+            FOREIGN KEY(video_id) REFERENCES videos (id), 
+            FOREIGN KEY(playlist_id) REFERENCES playlists(id)
         );"""
         if not cursor:
             return False
@@ -100,7 +101,7 @@ class Database:
             return False
 
     def insert_videos_playlists(self, cursor, data):
-        insert_sql = """INSERT INTO videosandplaylist (video_db_id, playlist_db_id) VALUES (%s, %s);"""
+        insert_sql = """INSERT INTO videos_playlists (video_id, playlist_id) VALUES (%s, %s);"""
         try:
             cursor.execute(insert_sql, data)
             self.db.commit()

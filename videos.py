@@ -74,7 +74,7 @@ def process_videos(youtube):
   for playlist in playlists:
     videos_list = get_videos_by_playlist_id(playlist_id=playlist[1], youtube=youtube)
     for video in videos_list:
-      videos.append((video["id"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["playlistId"], video["snippet"]["position"]))
+      videos.append((video["snippet"]["resourceId"]["videoId"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["playlistId"], video["snippet"]["position"]))
 
   created_v = db.create_videos_table(cursor=cursor)
   for video in videos:
