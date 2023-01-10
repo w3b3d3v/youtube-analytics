@@ -62,7 +62,6 @@ def store_playlist(row: List):
 
 def process_playlists(youtube):
   playlists = get_playlists(youtube=youtube, channel_id="UCP8Qy0VXJUzE8MCJdqARrtA")
-  print(playlists)
   for playlist in playlists:
     to_insert = []
     to_insert.append(playlist["id"])
@@ -79,7 +78,7 @@ def process_videos(youtube):
   for playlist in playlists:
     videos_list = get_videos_by_playlist_id(playlist_id=playlist[1], youtube=youtube)
     for video in videos_list:
-      videos.append((video["id"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["playlistId"]))
+      videos.append((video["id"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["playlistId"], video["snippet"]["position"]))
 
   created_v = db.create_videos_table(cursor=cursor)
   for video in videos:
@@ -94,3 +93,4 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 youtube = youtube_authenticate()
 process_playlists(youtube=youtube)
 process_videos(youtube=youtube)
+print('Done processing videos and playlists.')
