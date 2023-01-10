@@ -1,22 +1,38 @@
 # -*- coding: utf-8 -*-
-
 import os
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 from database import Database
 from typing import List
 from datetime import datetime
+import pickle
 
 SCOPES = ['https://www.googleapis.com/auth/youtube']
-API_SERVICE_NAME = 'youtube'
-API_VERSION = 'v3'
-CLIENT_SECRETS_FILE = 'secrets.json'
 
-def get_service_api():
-  flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
-  credentials = flow.run_console()
-  return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
+def youtube_authenticate():
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+    api_service_name = "youtube"
+    api_version = "v3"
+    client_secrets_file = "secrets.json"
+    creds = None
+    
+    if os.path.exists("token.pickle"):
+        with open("token.pickle", "rb") as token:
+            creds = pickle.load(token)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file, SCOPES)
+            creds = flow.run_local_server(port=0)
+
+        with open("token.pickle", "wb") as token:
+            pickle.dump(creds, token)
+
+    return build(api_service_name, api_version, credentials=creds)
 
 def get_playlists(youtube, channel_id: str, max_results: int = 50):
   request = youtube.playlists().list(
@@ -46,6 +62,7 @@ def store_playlist(row: List):
 
 def process_playlists(youtube):
   playlists = get_playlists(youtube=youtube, channel_id="UCP8Qy0VXJUzE8MCJdqARrtA")
+  print(playlists)
   for playlist in playlists:
     to_insert = []
     to_insert.append(playlist["id"])
@@ -74,6 +91,6 @@ def process_videos(youtube):
 # *DO NOT* leave this option enabled when running in production.
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-youtube = get_service_api()
+youtube = youtube_authenticate()
 process_playlists(youtube=youtube)
 process_videos(youtube=youtube)
