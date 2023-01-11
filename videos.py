@@ -8,8 +8,21 @@ from database import Database
 from typing import List
 import pickle
 import json
+from cryptography.fernet import Fernet
 
 SCOPES = ['https://www.googleapis.com/auth/youtube']
+
+def encode_data(data):
+  fernet_key = os.getenv("FERNET_KEY")
+  encoded_key = bytes(fernet_key, "utf-8")
+  fernet = Fernet(encoded_key)
+  return fernet.encrypt(bytes(data, "utf-8"))
+
+def decode_data(encrypted):
+  fernet_key = os.getenv("FERNET_KEY")
+  encoded_key = bytes(fernet_key, "utf-8")
+  fernet = Fernet(encoded_key)
+  return fernet.decrypt(encrypted)
 
 def format_env_to_secrets():
   client_id = os.getenv("CLIENT_ID")
@@ -33,14 +46,20 @@ def format_env_to_secrets():
   }
 
   formatted_json = json.dumps(formatted_obj)
-  with open("secrets.json", "w") as f:
-    f.write(formatted_json)
+  encrypted = encode_data(formatted_json)
+  with open("secrets.txt", "wb") as f:
+    f.write(encrypted)
+
+def get_client_config():
+  f = open("secrets.txt")
+  client_config = f.read()
+  f.close()
+  return json.loads(decode_data(client_config).decode("utf-8"))
 
 def youtube_authenticate():
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
     api_service_name = "youtube"
     api_version = "v3"
-    client_secrets_file = "secrets.json"
     creds = None
     
     if os.path.exists("token.pickle"):
@@ -51,7 +70,8 @@ def youtube_authenticate():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file, SCOPES)
+            client_config = get_client_config()
+            flow = InstalledAppFlow.from_client_config(client_config=client_config, scopes=SCOPES)
             creds = flow.run_local_server(port=0)
 
         with open("token.pickle", "wb") as token:
@@ -119,9 +139,6 @@ def run():
   process_playlists(youtube=youtube)
   process_videos(youtube=youtube)
   print('Done processing videos and playlists.')
-
-run()
-
 
 # select query to query video title and playlist title on which the video is 
 
