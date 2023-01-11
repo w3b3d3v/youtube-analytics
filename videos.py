@@ -58,12 +58,16 @@ def process_videos(youtube):
 # *DO NOT* leave this option enabled when running in production.
 
 def run():
-  os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-  format_env_to_secrets()
-  youtube = youtube_authenticate()
-  process_playlists(youtube=youtube)
-  process_videos(youtube=youtube)
-  print('Done processing videos and playlists.')
+  try:
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    format_env_to_secrets()
+    youtube = youtube_authenticate()
+    process_playlists(youtube=youtube)
+    process_videos(youtube=youtube)
+    print('Done processing videos and playlists.')
+    return True
+  except:
+    return False
 
 # select query to query video title and playlist title on which the video is 
 
