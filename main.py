@@ -3,5 +3,5 @@ import videos
 
 @functions_framework.http
 def update_youtube_data(request):
-    videos.run()
-    return 'OK'
+    ok = videos.run()
+    return 'OK' if ok else 'NOT OK'
