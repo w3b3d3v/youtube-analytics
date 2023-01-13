@@ -30,7 +30,7 @@ class Database:
             return False
     
     def insert_playlist(self, cursor, data):
-        insert_sql = """REPLACE INTO playlists (playlist_id, publishedAt, playlist_name) VALUES (%s, %s, %s);"""
+        insert_sql = f"""INSERT INTO playlists (playlist_id, publishedAt, playlist_name) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE playlist_name = '{data[2]}';"""
         try:
             cursor.execute(insert_sql, data)
             self.db.commit()
@@ -72,7 +72,7 @@ class Database:
             return False
     
     def insert_videos_data(self, cursor, data):
-        insert_sql = """REPLACE INTO videos (video_id, title, publishedAt, position) VALUES (%s, %s, %s, %s);"""
+        insert_sql = f"""INSERT INTO videos (video_id, title, publishedAt, position) VALUES (%s, %s, %s, %s) ON DUPLICATE KEY UPDATE title = '{data[1]}';"""
         
         try:
             cursor.execute(insert_sql, data)
@@ -101,14 +101,13 @@ class Database:
             return False
 
     def insert_videos_playlists(self, cursor, data):
-        insert_sql = """INSERT INTO videos_playlists (video_id, playlist_id) VALUES (%s, %s);"""
+        insert_sql = f"""INSERT INTO videos_playlists (video_id, playlist_id) VALUES (%s, %s) ON DUPLICATE KEY UPDATE video_id = '{data[0]}', playlist_id = '{data[1]}';"""
         try:
             cursor.execute(insert_sql, data)
             self.db.commit()
             return cursor.lastrowid
 
         except Error as e:
-            print(e)
             return False
 
     def create_analytics_table(self, cursor):
