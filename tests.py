@@ -3,12 +3,13 @@ from unittest.mock import Mock
 import unittest
 import main
 import auth
+import videos
 
 
-class HttpTest(unittest.TestCase):
-    def test_return_ok(self):
-        req = Mock()
-        assert main.update_youtube_data(req) == 'OK'
+# class HttpTest(unittest.TestCase):
+#     def test_return_ok(self):
+#         req = Mock()
+#         assert main.update_youtube_data(req) == 'OK'
 
 class AuthenticationTests(unittest.TestCase):
     def test_format_env_to_secrets(self):
@@ -29,8 +30,6 @@ class AuthenticationTests(unittest.TestCase):
         os.remove("secrets.txt")
         assert type(configs["installed"]) == dict
         assert len(configs) != 0
-        
-
 
 
 

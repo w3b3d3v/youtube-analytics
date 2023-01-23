@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
-from database import Database
 from auth import format_env_to_secrets, youtube_authenticate
-from typing import List
+import api
+import json
 
 def get_playlists(youtube, channel_id: str, max_results: int = 50):
   request = youtube.playlists().list(
@@ -22,37 +22,47 @@ def get_videos_by_playlist_id(playlist_id: str, youtube: object, max_results: in
   response = request.execute()
   return response["items"]
 
-def store_playlist(row: List):
-  db = Database()
-  cursor = db.create_cursor()
-  created = db.create_playlists_table(cursor=cursor)
-  if not created:
-      return
-  return db.insert_playlist(cursor=cursor, data=tuple(row))
 
 def process_playlists(youtube):
   playlists = get_playlists(youtube=youtube, channel_id="UCP8Qy0VXJUzE8MCJdqARrtA")
+  playlist_api = api.Playlist()
+
   for playlist in playlists:
-    to_insert = [playlist["id"], playlist["snippet"]["publishedAt"].split("T")[0], playlist["snippet"]["title"]]
-    store_playlist(row=to_insert)
+    to_insert = {
+      "data": {
+        "playlist_id": playlist["id"],
+        "playlist_name": playlist["snippet"]["title"],
+        "playlist_published_at": playlist["snippet"]["publishedAt"].split("T")[0]
+      }
+    }
+    playlist_api.insert(to_insert)
+
 
 def process_videos(youtube):
-  db = Database()
-  cursor = db.create_cursor()
-  playlists = db.get_inserted_playlists(cursor=cursor)
-  videos = []
-  for playlist in playlists:
-    videos_list = get_videos_by_playlist_id(playlist_id=playlist[1], youtube=youtube)
-    for video in videos_list:
-      videos.append((video["snippet"]["resourceId"]["videoId"], video["snippet"]["title"], video["snippet"]["publishedAt"].split("T")[0], video["snippet"]["position"], playlist[0]))
+  playlist_api = api.Playlist()
+  data = playlist_api.get_all()
+  playlists = json.loads(data)
+  
+  if not playlists:
+    return
 
-  created_v = db.create_videos_table(cursor=cursor)
-  created_vp = db.create_video_playlists_table(cursor=cursor)
-  for video in videos:
-    if not created_v or not created_vp:
-      return
-    video_db_id = db.insert_videos_data(cursor=cursor, data=video[:-1])
-    db.insert_videos_playlists(cursor=cursor, data=tuple([video_db_id, video[-1]]))
+  video_api = api.Video()
+
+  for playlist in playlists["data"]:
+    videos_list = get_videos_by_playlist_id(playlist_id=playlist["attributes"]["playlist_id"], youtube=youtube)
+
+
+    for video in videos_list:
+      to_insert = {
+        "data": {
+          "video_id": video["snippet"]["resourceId"]["videoId"],
+          "title": video["snippet"]["title"],
+          "video_published_at": video["snippet"]["publishedAt"].split("T")[0],
+          "position": int(video["snippet"]["position"]),
+          "playlists": [playlist["id"]]
+        }
+      }
+      video_api.insert(to_insert)
 
 # Disable OAuthlib's HTTPs verification when running locally.
 # *DO NOT* leave this option enabled when running in production.
@@ -64,11 +74,11 @@ def run():
     youtube = youtube_authenticate()
     process_playlists(youtube=youtube)
     process_videos(youtube=youtube)
+
     print('Done processing videos and playlists.')
     return True
   except:
+    print('Something went wrong')
     return False
 
-# select query to query video title and playlist title on which the video is 
-
-# SELECT videos.title, playlists.playlist_name FROM videos LEFT OUTER JOIN videos_playlists ON videos.id = videos_playlists.video_id LEFT OUTER JOIN playlists ON videos_playlists.playlist_id = playlists.id;
+run()
