@@ -1,11 +1,12 @@
 import os
-import pickle
 import json
 from cryptography.fernet import Fernet
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from dotenv import load_dotenv
+load_dotenv()
 
 SCOPES = ['https://www.googleapis.com/auth/youtube']
 
@@ -22,6 +23,9 @@ def decode_data(encrypted):
   return fernet.decrypt(encrypted)
 
 def format_env_to_secrets():
+  if os.path.exists("secrets.txt"):
+    print("secrets already set")
+    return
   client_id = os.getenv("CLIENT_ID")
   project_id = os.getenv("PROJECT_ID")
   auth_uri = os.getenv("AUTH_URI")
@@ -55,23 +59,4 @@ def get_client_config():
 
 def youtube_authenticate():
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-    api_service_name = "youtube"
-    api_version = "v3"
-    creds = None
-    
-    if os.path.exists("token.pickle"):
-        with open("token.pickle", "rb") as token:
-            creds = pickle.load(token)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            client_config = get_client_config()
-            flow = InstalledAppFlow.from_client_config(client_config=client_config, scopes=SCOPES)
-            creds = flow.run_local_server(port=0)
-
-        with open("token.pickle", "wb") as token:
-            pickle.dump(creds, token)
-
-    return build(api_service_name, api_version, credentials=creds)
+    return build("youtube", "v3", developerKey=os.getenv("API_KEY"))
