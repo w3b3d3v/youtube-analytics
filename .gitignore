@@ -130,4 +130,3 @@ dmypy.json
 
 secrets.json
 analytics.sqlite
-.pickle
