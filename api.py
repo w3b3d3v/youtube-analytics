@@ -4,13 +4,13 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-API_TOKEN = os.getenv("API_TOKEN")
+STRAPI_API_TOKEN = os.getenv("STRAPI_API_TOKEN")
 HEADERS = {
-    "Authorization": f"bearer {API_TOKEN}"
+    "Authorization": f"bearer {STRAPI_API_TOKEN}"
 }
 POST_HEADERS = {
     "Content-Type": "application/json",
-    "Authorization": f"bearer {API_TOKEN}"
+    "Authorization": f"bearer {STRAPI_API_TOKEN}"
 }
 
 class Playlist:
