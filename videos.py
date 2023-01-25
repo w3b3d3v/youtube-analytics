@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-from auth import format_env_to_secrets, youtube_authenticate
+from auth import youtube_authenticate
 import api
 import json
+import traceback
 
 def get_playlists(youtube, channel_id: str, max_results: int = 50):
   request = youtube.playlists().list(
@@ -70,15 +71,14 @@ def process_videos(youtube):
 def run():
   try:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-    format_env_to_secrets()
     youtube = youtube_authenticate()
     process_playlists(youtube=youtube)
     process_videos(youtube=youtube)
-
     print('Done processing videos and playlists.')
     return True
-  except:
-    print('Something went wrong')
+
+  except Exception:
+    traceback.print_exc()
     return False
 
 run()
