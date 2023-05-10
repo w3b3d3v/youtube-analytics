@@ -24,7 +24,7 @@ class Playlist:
     
     def insert(self, playlist_data):
         json_data = json.dumps(playlist_data)
-        res = requests.post("https://web3dev.uc.r.appspot.com/api/playlists", headers=POST_HEADERS, data=json_data)
+        res = requests.post("https://web3dev.uc.r.appspot.com/api/playlists/createOrUpdate", headers=POST_HEADERS, data=json_data)
         return res.text
 
 class Video:
@@ -38,6 +38,5 @@ class Video:
 
     def insert(self, video_data):
         json_data = json.dumps(video_data)
-        res = requests.post("https://web3dev.uc.r.appspot.com/api/videos", headers=POST_HEADERS, data=json_data, params={"populate":"playlists"})
+        res = requests.post("https://web3dev.uc.r.appspot.com/api/videos/createOrUpdate", headers=POST_HEADERS, data=json_data, params={"populate":"playlists"})
         return res.text
-
