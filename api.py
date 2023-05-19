@@ -5,7 +5,7 @@ import os
 load_dotenv()
 
 STRAPI_API_TOKEN = os.getenv("STRAPI_API_TOKEN")
-API_URL= "https://strapi."
+API_URL= os.getenv("API_URL")
 HEADERS = {
     "Authorization": f"bearer {STRAPI_API_TOKEN}"
 }
@@ -20,7 +20,7 @@ class Playlist:
         return req.text
     
     def get_by_id(self, playlist_id):
-        req = requests.get(url=os.getenv("API_URL") + "playlists/{playlist_id}?populate=*", headers=HEADERS)
+        req = requests.get(url=os.getenv("API_URL") + f"playlists/{playlist_id}?populate=*", headers=HEADERS)
         return json.dumps(req.text)
     
     def insert(self, playlist_data):
